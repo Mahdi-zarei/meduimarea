@@ -38,10 +38,10 @@ func main() {
 				src.Write(buffer2[:nr])
 				idx2++
 				idx2 %= len(pool)
+				fmt.Println(buffer2)
 			}
 			if er != nil {
-				fmt.Println(er)
-				//break
+
 			}
 		}
 	}()
