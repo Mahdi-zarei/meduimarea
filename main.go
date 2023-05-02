@@ -41,7 +41,7 @@ func main() {
 			}
 			if er != nil {
 				fmt.Println(er)
-				break
+				//break
 			}
 		}
 	}()
@@ -55,7 +55,7 @@ func main() {
 		}
 		if er != nil {
 			fmt.Println(er)
-			break
+			//break
 		}
 	}
 }
