@@ -28,8 +28,26 @@ func main() {
 	}
 
 	idx := 0
+	idx2 := 0
 
 	buffer := make([]byte, 512*1024)
+	buffer2 := make([]byte, 512*1024)
+	go func() {
+		for {
+			nr, er := pool[idx2].Read(buffer2)
+			if nr > 0 {
+				src.Write(buffer2[:nr])
+				idx2++
+				idx2 %= len(pool)
+			}
+			if er != nil {
+				if er != io.EOF {
+					fmt.Println(er)
+				}
+				break
+			}
+		}
+	}()
 
 	for {
 		nr, er := src.Read(buffer)
