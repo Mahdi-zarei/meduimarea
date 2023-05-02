@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"net"
 )
 
@@ -41,9 +40,7 @@ func main() {
 				idx2 %= len(pool)
 			}
 			if er != nil {
-				if er != io.EOF {
-					fmt.Println(er)
-				}
+				fmt.Println(er)
 				break
 			}
 		}
@@ -57,9 +54,7 @@ func main() {
 			idx %= len(pool)
 		}
 		if er != nil {
-			if er != io.EOF {
-				fmt.Println(er)
-			}
+			fmt.Println(er)
 			break
 		}
 	}
