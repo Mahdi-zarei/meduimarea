@@ -30,7 +30,7 @@ func main() {
 	bufferSize = 512 * 1024
 	connCount = 4
 	logger = log.New(os.Stdout, "", log.LstdFlags)
-	srv, err := net.ListenTCP("tcp", &net.TCPAddr{Port: 2222, IP: net.ParseIP("127.0.0.1")})
+	srv, err := net.ListenTCP("tcp", &net.TCPAddr{Port: 2222})
 	if err != nil {
 		panic(err)
 	}
