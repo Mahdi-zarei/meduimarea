@@ -25,8 +25,8 @@ func main() {
 		ender = append(ender, []byte(x)...)
 	}
 
-	destIP = "172.67.176.77"
-	destPort = 8443
+	destIP = "127.0.0.1"
+	destPort = 5555
 	bufferSize = 512 * 1024
 	connCount = 4
 	logger = log.New(os.Stdout, "", log.LstdFlags)
@@ -50,11 +50,14 @@ func main() {
 }
 
 func handleConnection(src *net.TCPConn) {
-	conns, err := makeUpstreamConnections()
+	data, _ := getConnectHttp(src)
+
+	conns, resp, err := makeUpstreamConnections(data)
 	if err != nil {
 		logger.Printf("error in making upstream connections: %s", err)
 		return
 	}
+	src.Write(resp)
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
@@ -77,9 +80,10 @@ func handleConnection(src *net.TCPConn) {
 	wg.Wait()
 }
 
-func makeUpstreamConnections() (map[int]*net.TCPConn, error) {
+func makeUpstreamConnections(data []byte) (map[int]*net.TCPConn, []byte, error) {
 	conns := make(map[int]*net.TCPConn)
 	uid := uuid.NewString()
+	resp := make([]byte, 1000)
 
 	for i := 0; i < connCount; i++ {
 		conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{
@@ -88,9 +92,15 @@ func makeUpstreamConnections() (map[int]*net.TCPConn, error) {
 		})
 		if err != nil {
 			closeConnections(conns)
-			return nil, err
+			return nil, nil, err
 		}
 		conn.SetNoDelay(true)
+
+		resp, err = sendHttpConnect(data, conn)
+		if err != nil {
+			closeConnections(conns)
+			return nil, nil, err
+		}
 
 		data := uid + "#" + strconv.Itoa(i)
 		binaryData := []byte(data)
@@ -98,12 +108,12 @@ func makeUpstreamConnections() (map[int]*net.TCPConn, error) {
 		_, err = conn.Write(binaryData)
 		if err != nil {
 			closeConnections(conns)
-			return nil, err
+			return nil, nil, err
 		}
 		conns[i] = conn
 	}
 
-	return conns, nil
+	return conns, resp, nil
 }
 
 func closeConnections(conns map[int]*net.TCPConn) {
@@ -189,4 +199,29 @@ func appendToBuffer(buffer []byte, nr int) ([]byte, int) {
 	}
 
 	return buffer, nr + len(ender)
+}
+
+func getConnectHttp(src *net.TCPConn) ([]byte, error) {
+	buffer := make([]byte, 10000)
+	nr, err := src.Read(buffer)
+	if err != nil {
+		return nil, err
+	}
+
+	return buffer[:nr], nil
+}
+
+func sendHttpConnect(data []byte, conn *net.TCPConn) ([]byte, error) {
+	resp := make([]byte, 1000)
+	_, err := conn.Write(data)
+	if err != nil {
+		return nil, err
+	}
+
+	nr, err := conn.Read(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp[:nr], nil
 }
