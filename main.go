@@ -25,8 +25,8 @@ func main() {
 		ender = append(ender, []byte(x)...)
 	}
 
-	destIP = "127.0.0.1"
-	destPort = 5555
+	destIP = "104.21.88.99"
+	destPort = 555
 	bufferSize = 512 * 1024
 	connCount = 4
 	logger = log.New(os.Stdout, "", log.LstdFlags)
