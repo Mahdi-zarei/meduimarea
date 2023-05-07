@@ -26,11 +26,11 @@ func main() {
 	}
 
 	destIP = "127.0.0.1"
-	destPort = 5555
+	destPort = 6543
 	bufferSize = 512 * 1024
 	connCount = 4
 	logger = log.New(os.Stdout, "", log.LstdFlags)
-	srv, err := net.ListenTCP("tcp", &net.TCPAddr{Port: 888})
+	srv, err := net.ListenTCP("tcp", &net.TCPAddr{Port: 6555})
 	if err != nil {
 		panic(err)
 	}
