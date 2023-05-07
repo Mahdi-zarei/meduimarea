@@ -26,7 +26,7 @@ func main() {
 	}
 
 	destIP = "127.0.0.1"
-	destPort = 6543
+	destPort = 5555
 	bufferSize = 512 * 1024
 	connCount = 4
 	logger = log.New(os.Stdout, "", log.LstdFlags)
