@@ -25,7 +25,7 @@ func main() {
 		ender = append(ender, []byte(x)...)
 	}
 
-	destIP = "104.21.88.99"
+	destIP = "172.67.176.77"
 	destPort = 8443
 	bufferSize = 512 * 1024
 	connCount = 4
