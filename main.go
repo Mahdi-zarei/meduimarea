@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/google/uuid"
 	"log"
 	"net"
@@ -17,6 +18,7 @@ var destPort int
 var connCount int
 var ender []byte
 var bufferSize int
+var lingerTime int
 
 func main() {
 	var tmp []string
@@ -25,10 +27,13 @@ func main() {
 		ender = append(ender, []byte(x)...)
 	}
 
+	bufferSize = *flag.Int("buffer", 512, "buffer amount in kb")
+	connCount = *flag.Int("cnt", 4, "connection count")
+	lingerTime = *flag.Int("linger", 200, "connection linger time in ms")
+
 	destIP = "127.0.0.1"
 	destPort = 5555
-	bufferSize = 512 * 1024
-	connCount = 4
+	bufferSize = bufferSize * 1024
 	logger = log.New(os.Stdout, "", log.LstdFlags)
 	srv, err := net.ListenTCP("tcp", &net.TCPAddr{Port: 2222})
 	if err != nil {
@@ -124,7 +129,7 @@ func closeConnections(conns map[int]*net.TCPConn) {
 }
 
 func handleManyToOneForward(dest *net.TCPConn, conns map[int]*net.TCPConn) {
-	buffer := make([]byte, connCount*bufferSize)
+	buffer := make([]byte, bufferSize)
 	cnt := 0
 	for {
 		nr, err := conns[cnt].Read(buffer)
@@ -136,7 +141,6 @@ func handleManyToOneForward(dest *net.TCPConn, conns map[int]*net.TCPConn) {
 				cnt %= connCount
 			}
 
-			logger.Println("read ", cnt)
 			_, err2 := dest.Write(buffer[:nr])
 			if err2 != nil {
 				logger.Printf("error in writing to openvpn connection: %s", err2)
@@ -153,28 +157,27 @@ func handleManyToOneForward(dest *net.TCPConn, conns map[int]*net.TCPConn) {
 }
 
 func handleOneToManyForward(src *net.TCPConn, conns map[int]*net.TCPConn) {
-	buffer := make([]byte, connCount*bufferSize)
+	buffer := make([]byte, bufferSize)
 	cnt := 0
 	last := time.Now()
 	for {
 		nr, err := src.Read(buffer)
 		if nr > 0 {
 
-			flag := false
-			if time.Now().Sub(last) >= time.Second {
+			shouldIncr := false
+			if time.Now().Sub(last) >= time.Duration(lingerTime)*time.Millisecond {
 				buffer, nr = appendToBuffer(buffer, nr)
 				last = time.Now()
-				flag = true
+				shouldIncr = true
 			}
 
-			logger.Println("write ", cnt)
 			_, err2 := conns[cnt].Write(buffer[:nr])
 			if err2 != nil {
 				logger.Printf("error in writing to mux connection: %s", err2)
 				return
 			}
 
-			if flag {
+			if shouldIncr {
 				cnt++
 				cnt %= connCount
 			}
