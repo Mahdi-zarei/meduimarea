@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -21,6 +20,7 @@ var bufferSize int
 var lingerTime int
 
 func main() {
+	logger = log.New(os.Stdout, "", log.LstdFlags)
 	var tmp []string
 	tmp = []string{"\000", "\002", "\004", "\000"}
 	for _, x := range tmp {
@@ -34,7 +34,7 @@ func main() {
 	destIP = "127.0.0.1"
 	destPort = 5555
 	bufferSize = bufferSize * 1024
-	logger = log.New(os.Stdout, "", log.LstdFlags)
+	logger.Printf("starting with connection count %v linger %v buffer size %v", connCount, lingerTime, bufferSize)
 	srv, err := net.ListenTCP("tcp", &net.TCPAddr{Port: 2222})
 	if err != nil {
 		panic(err)
