@@ -28,9 +28,10 @@ func main() {
 		ender = append(ender, []byte(x)...)
 	}
 
-	bufferSize = *flag.Int("buffer", 512, "buffer amount in kb")
-	connCount = *flag.Int("cnt", 4, "connection count")
-	lingerTime = *flag.Int("linger", 200, "connection linger time in ms")
+	flag.IntVar(&bufferSize, "buffer", 512, "buffer size in kb")
+	flag.IntVar(&connCount, "cnt", 4, "connection count")
+	flag.IntVar(&lingerTime, "linger", 300, "connection linger time in ms")
+	flag.Parse()
 
 	destIP = "127.0.0.1"
 	destPort = 5555
