@@ -113,6 +113,7 @@ func makeUpstreamConnections(data []byte) (map[int]*net.TCPConn, []byte, error) 
 		conns[i] = conn
 	}
 
+	time.Sleep(1 * time.Second)
 	return conns, resp, nil
 }
 
